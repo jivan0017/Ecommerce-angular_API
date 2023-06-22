@@ -21,10 +21,11 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\JWTController;
 
 Route::group(['prefix' => 'users'], function($router) {
-    Route::post('/register', [JWTController::class, 'register']);
-    Route::post('/login',    [JWTController::class, 'login']);
-    Route::post('/logout',   [JWTController::class, 'logout']);
-    Route::post('/refresh',  [JWTController::class, 'refresh']);
+    Route::post('/register',    [JWTController::class, 'register']);
+    Route::post('/login',       [JWTController::class, 'loginEcommerceClient']);
+    Route::post('/login-admin', [JWTController::class, 'loginEcommerceAdmin']);
+    Route::post('/logout',      [JWTController::class, 'logout']);
+    Route::post('/refresh',     [JWTController::class, 'refresh']);
     // Route::post('/profile', [JWTController::class, 'profile']);
 });
 

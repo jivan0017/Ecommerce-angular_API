@@ -28,20 +28,23 @@ class JWTController extends Controller
     public function register(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|min:2|max:100',
-            'email' => 'required|string|email|max:100|unique:users',
-            'password' => 'required|string|confirmed|min:6',
+            'name'     => 'required|string|min:2|max:100',
+            'surname'  => 'required|string|min:2|max:100',
+            'email'    => 'required|string|email|max:100|unique:users',
+            'password' => 'required|string|same:repeat_password|min:6',
         ]);
 
-        if($validator->fails()) {
+        if ($validator->fails()) {
             return response()->json($validator->errors(), 400);
         }
 
         $user = User::create([
-                'name' => $request->name,
-                'email' => $request->email,
-                'password' => Hash::make($request->password)
-            ]);
+            'name'      => $request->name,
+            'surname'   => $request->surname,
+            'email'     => $request->email,
+            'user_type' => $request->user_type,
+            'password'  => Hash::make($request->password)
+        ]);
 
         return response()->json([
             'message' => 'User successfully registered',
@@ -50,14 +53,37 @@ class JWTController extends Controller
     }
 
     /**
-     * login user
+     * login user type: Ecommerce client
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function login(Request $request)
+    public function loginEcommerceClient(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'email' => 'required|email',
+            'email'    => 'required|email',
+            'password' => 'required|string|min:6',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 422);
+        }
+
+        if (!$token = auth()->attempt($validator->validated())) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        return $this->respondWithToken($token);
+    }
+
+    /**
+     * login user type: Ecommerce Admin User
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function loginEcommerceAdmin(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'email'    => 'required|email',
             'password' => 'required|string|min:6',
         ]);
 
@@ -115,9 +141,9 @@ class JWTController extends Controller
     {
         return response()->json([
             'access_token' => $token,
-            'token_type' => 'bearer',
-            'expires_in' => auth()->factory()->getTTL() * 60,
-            "user" => auth()->user(),
+            'token_type'   => 'bearer',
+            'expires_in'   => auth()->factory()->getTTL() * 60,
+            "user"         => auth()->user(),
         ]);
     }
 }
